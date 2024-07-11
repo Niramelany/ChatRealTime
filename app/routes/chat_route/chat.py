@@ -1,5 +1,5 @@
 from flask import Blueprint, request, render_template,redirect
-from app.extensions import socketIO
+from app.extensions import socketio
 from flask_socketio import send
 
 chat_bp = Blueprint('chat', __name__)
@@ -13,7 +13,7 @@ def new_chat():
     listUsers.append(currentUser)
     return render_template('chat.html',currentUser=currentUser,listUsers=listUsers)
 
-@socketIO.on('message')
+@socketio.on('message')
 def handleMessage(msg):
     print('Message: ' + msg)
     send(msg, broadcast = True)
