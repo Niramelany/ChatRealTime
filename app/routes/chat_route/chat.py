@@ -37,4 +37,4 @@ def connect():
     emit('user_disconnect',{'user':listUsers.get(request.sid,'desconocido')},json=True,broadcast=True)
     listUsers.pop(request.sid)
     listu=[v for k, v in listUsers.items()]
-    emit('user_connect',{'user':listu},json=True,broadcast=True)
+    emit('user_connect_list',{'user':listu},json=True,broadcast=True)
