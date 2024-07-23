@@ -10,9 +10,9 @@ def new_chat():
     print(request.args.to_dict)
     print(request.args.get('name'))
     currentUser = request.args.get('name')
-    if not currentUser:
-        return redirect('/')
-    return render_template('chat.html',currentUser=currentUser)
+    #if not currentUser:
+    #    return redirect('/')
+    return render_template('chat.html')
 
 @socketio.on('message')
 def handleMessage(msg):
