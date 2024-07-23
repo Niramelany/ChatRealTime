@@ -43,13 +43,11 @@ document.addEventListener("DOMContentLoaded", () => {
     // Crear chat grupal
     createGroupButton.addEventListener("click", () => {
         const groupName = document.getElementById("groupName").value;
-        const publicToggle = document.getElementById("publicToggle").checked ? "Sí" : "No";
         if (groupName) {
             const groupItem = document.createElement("div");
             groupItem.classList.add("chat-item");
             groupItem.innerHTML = `
                 <img src="/static/group.png" alt="Group Icon">
-                <span>${groupName} (Público: ${publicToggle})</span>
             `;
             chatList.appendChild(groupItem);
             closeDialog(groupChatDialog);
