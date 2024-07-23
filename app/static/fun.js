@@ -1,6 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
     const groupChatButton = document.getElementById("groupChatButton");
     const addFriendButton = document.getElementById("addFriendButton");
+    const logoutButton = document.getElementById("logout");
     const groupChatDialog = document.getElementById("groupChatDialog");
     const addFriendDialog = document.getElementById("addFriendDialog");
     const closeGroupChatDialog = document.getElementById("closeGroupChatDialog");
@@ -53,6 +54,10 @@ document.addEventListener("DOMContentLoaded", () => {
             chatList.appendChild(groupItem);
             closeDialog(groupChatDialog);
         }
+    });
+
+    logoutButton.addEventListener("click", () => {
+        window.location.href = "/logout";
     });
 
     // Añadir amigo

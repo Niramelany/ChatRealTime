@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template,request,redirect
-from flask_login import current_user,login_user
+from flask_login import current_user,login_user,logout_user
 from app.extensions import login_manager
 from app.models.usuarios import Usuario
 login_bp = Blueprint('login', __name__)
@@ -47,4 +47,9 @@ def register_route():
             user.save()
             login_user(user)
             return redirect('/chat')
-    return render_template('register.html',error=error) 
+    return render_template('register.html',error=error)
+
+@login_bp.route('/logout')
+def logout_route():
+    logout_user()
+    return redirect('/login')

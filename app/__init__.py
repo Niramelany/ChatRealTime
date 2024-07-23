@@ -12,7 +12,7 @@ def create_app(config_class=Config):
     migrate.init_app(app,db)
     ma.init_app(app)
     login_manager.init_app(app)
-    login_manager.login_view = "login"
     socketio.run(app)
     register_routes(app)
+    login_manager.login_view = "/login"
     return app
