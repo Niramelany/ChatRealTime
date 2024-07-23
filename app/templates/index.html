@@ -10,14 +10,23 @@
     <div class="login-container">
         <h1>Sistema de chat</h1>
         <form method="POST" action="/login">
-            <label for="name">Nombre:</label>
-            <input type="text" id="name" name="nombre" required>
             
             <label for="username">Nombre de usuario:</label>
             <input type="text" id="username" name="username" required>
+
+            <label for="password">Contraseña:</label>
+            <input type="password" id="password" name="password" required>
             
             <button type="submit">Iniciar sesión</button>
+            <br></br>
+            <button id="registerButton">Registrar</button>
         </form>
     </div>
+    <script>
+        const registerButton = document.getElementById("registerButton");
+        registerButton.addEventListener("click", () => {
+            window.location.href = "/register";
+        });
+    </script>
 </body>
 </html>
