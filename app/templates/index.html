@@ -16,7 +16,10 @@
 
             <label for="password">Contraseña:</label>
             <input type="password" id="password" name="password" required>
-            
+            {% if error %}
+            <div id="errorMessage" class="error-message">{{error}}</div>
+            <br></br>
+            {% endif %}
             <button type="submit">Iniciar sesión</button>
             <br></br>
             <button id="registerButton">Registrar</button>

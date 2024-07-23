@@ -17,12 +17,16 @@ def method_name():
 def login_route():
     if current_user.is_authenticated:
         return redirect('/chat')
+    error=None
     if request.method=="POST":
         user = Usuario.get_by_username(request.form["username"])
         if user is not None and user.check_passwd(request.form["password"]):
             login_user(user)
             return redirect('/chat')
-    return render_template('index.html')
+        else:
+            error="Usuario y/o contraseña incorrectos"
+    
+    return render_template('index.html',error=error)
 
 
 @login_bp.route('/register', methods=['GET', 'POST'])

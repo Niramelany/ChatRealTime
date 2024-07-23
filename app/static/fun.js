@@ -48,6 +48,7 @@ document.addEventListener("DOMContentLoaded", () => {
             groupItem.classList.add("chat-item");
             groupItem.innerHTML = `
                 <img src="/static/group.png" alt="Group Icon">
+                <span>${groupName}</span>
             `;
             chatList.appendChild(groupItem);
             closeDialog(groupChatDialog);
