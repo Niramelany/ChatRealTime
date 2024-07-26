@@ -31,18 +31,22 @@ def add_friend():
         solicitud=Solicitud.check_solicitud(user_snd=current_user.id_user,user_rcv=user_aux.id_user)
         if solicitud is None:
             solicitud=Solicitud(id_user_snd=current_user.id_user,id_user_rcv=user_aux.id_user)
-            solicitud.save()
-            return jsonify(msg="ok")
-        elif solicitud.check_status()=='pendiente':
-            return jsonify(msg="La solicitud esta Pendiente"),401
-        elif solicitud.check_status()=='aceptada':
-            return jsonify(msg="Ya son amigos"),401
-        elif solicitud.check_status()=='rechazada':
-            return jsonify(msg="solicitud rechazada"),401
+            solicitud.send()
+            return jsonify(msg_ok="solicitud enviada"),201
+        else:
+            return jsonify(msg=solicitud.check_status()),401
     elif tipo_solicitud=='acepta':
-        solicitud=Solicitud(id_user_snd=current_user.id_user,id_user_rcv=user_aux.id_user)
+        solicitud=Solicitud.check_solicitud(user_snd=user_aux.id_user,user_rcv=current_user.id_user)
+        if solicitud is not None:
+            solicitud.accepted()
+            return jsonify(msg_ok=solicitud.check_status()),201
+    elif tipo_solicitud=='rechaza':
+        solicitud=Solicitud.check_solicitud(user_snd=user_aux.id_user,user_rcv=current_user.id_user)
+        if solicitud is not None:
+            solicitud.rejected()
+            return jsonify(msg_ok=solicitud.check_status()),201
     else:
-        return jsonify(error=f'solicitud ingresada:{tipo_solicitud}, solo se admite ''envio'' o ''acepta'''), 401
+        return jsonify(error=f'solicitud ingresada:{tipo_solicitud}, solo se admite "envio" o ""acepta"'), 401
     return jsonify(request_error="Nada que retornar"),401
 
 

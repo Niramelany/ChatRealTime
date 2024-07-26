@@ -45,10 +45,20 @@ class Solicitud(db.Model):
     user_snd = db.relationship("Usuario", foreign_keys=[id_user_snd])
     user_rcv = db.relationship("Usuario", foreign_keys=[id_user_rcv])
 
-    def save(self):
-        print(self.id_solicitud)
+    def send(self):
         if not self.id_solicitud:
             db.session.add(self)
+        db.session.commit()
+    
+    def accepted(self):
+        if self.id_solicitud:
+            print(self.id_solicitud)
+            self.status="aceptada"
+        db.session.commit()
+    
+    def rejected(self):
+        if self.id_solicitud:
+            self.status="rechazada"
         db.session.commit()
 
     def check_status(self):
