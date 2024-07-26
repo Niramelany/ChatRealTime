@@ -1,7 +1,56 @@
-from flask import Blueprint, request,sessions
-user_bp = Blueprint('user', __name__)
+from flask import Blueprint, request, jsonify
+from flask_jwt_extended import jwt_required, current_user
+from app.models.usuarios import Usuario,Solicitud
+from app.extensions import jwt
 
-@user_bp.route('/addAmigo',methods=['POST'])
-def add_amigo():
-    
-    pass
+user_bp = Blueprint("user", __name__)
+
+@jwt.user_identity_loader
+def user_identity_lookup(user):
+    return user.id_user
+
+@jwt.user_lookup_loader
+def user_lookup_callback(_jwt_header, jwt_data):
+    identity = jwt_data["sub"]
+    return Usuario.query.filter_by(id_user=identity).one_or_none()
+
+
+@user_bp.route("/solicitud", methods=["POST"])
+@jwt_required()
+def add_friend():
+    tipo_solicitud = request.json.get("solicitud", None)
+    user_service = request.json.get("username", None)
+    if tipo_solicitud is None and user_service is None:
+        return jsonify(request_error="No se detecta datos"), 401
+    user_aux = Usuario.get_by_username(user_service)
+    if user_aux is None:
+        return jsonify(error="El usuario ingresado no existe"), 401
+    ##comprobamos la solicitud
+    if tipo_solicitud =='envio':
+        #id_user_snd el que envia, id_user_rcv el que recibe
+        solicitud=Solicitud.check_solicitud(user_snd=current_user.id_user,user_rcv=user_aux.id_user)
+        if solicitud is None:
+            solicitud=Solicitud(id_user_snd=current_user.id_user,id_user_rcv=user_aux.id_user)
+            solicitud.save()
+            return jsonify(msg="ok")
+        elif solicitud.check_status()=='pendiente':
+            return jsonify(msg="La solicitud esta Pendiente"),401
+        elif solicitud.check_status()=='aceptada':
+            return jsonify(msg="Ya son amigos"),401
+        elif solicitud.check_status()=='rechazada':
+            return jsonify(msg="solicitud rechazada"),401
+    elif tipo_solicitud=='acepta':
+        solicitud=Solicitud(id_user_snd=current_user.id_user,id_user_rcv=user_aux.id_user)
+    else:
+        return jsonify(error=f'solicitud ingresada:{tipo_solicitud}, solo se admite ''envio'' o ''acepta'''), 401
+    return jsonify(request_error="Nada que retornar"),401
+
+
+@user_bp.route("/addGroup", methods=["POST"])
+def add_group():
+    data = request.json
+    print(data["to"])
+    user = Usuario.get_by_username(data["to"])
+    if user is not None:
+        error = "El nombre de usuario ya existe"
+    return {"hola": 2}, 201
