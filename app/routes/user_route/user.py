@@ -14,17 +14,35 @@ def user_lookup_callback(_jwt_header, jwt_data):
     identity = jwt_data["sub"]
     return Usuario.query.filter_by(id_user=identity).one_or_none()
 
+@jwt.expired_token_loader
+def expired_token_callback(jwt_header, jwt_payload):
+    #print(jwt_payload)
+    return jsonify(code="dave", err="I can't let you do that"), 401
+
+@user_bp.route("/solicitud", methods=["GET"])
+@jwt_required()
+def get_solicitud():
+    id_user=current_user.id_user
+    print(f'user {current_user.nombre} solicita listado de solicitudes')
+    query=Solicitud.get_by_username(id_user)
+    list_solicitud=[]
+    for solicitud in query:
+        list_solicitud.append(solicitud.to_json())
+    return jsonify(list_solicitud=list_solicitud)
 
 @user_bp.route("/solicitud", methods=["POST"])
 @jwt_required()
 def add_friend():
-    tipo_solicitud = request.json.get("solicitud", None)
+    print(request.json)
+    tipo_solicitud = request.json.get("tipo_solicitud", None)
     user_service = request.json.get("username", None)
     if tipo_solicitud is None and user_service is None:
-        return jsonify(request_error="No se detecta datos"), 401
+        return jsonify(request_error="No se detecta datos"), 400
     user_aux = Usuario.get_by_username(user_service)
     if user_aux is None:
-        return jsonify(error="El usuario ingresado no existe"), 401
+        return jsonify("El usuario ingresado no existe"), 400
+    if user_aux.id_user==current_user.id_user:
+        return jsonify("¿¿Intentas enviarte solicitud a ti mismo??"), 400
     ##comprobamos la solicitud
     if tipo_solicitud =='envio':
         #id_user_snd el que envia, id_user_rcv el que recibe
@@ -34,7 +52,7 @@ def add_friend():
             solicitud.send()
             return jsonify(msg_ok="solicitud enviada"),201
         else:
-            return jsonify(msg=solicitud.check_status()),401
+            return jsonify(f'Solicitud en estado {solicitud.check_status()}'),400
     elif tipo_solicitud=='acepta':
         solicitud=Solicitud.check_solicitud(user_snd=user_aux.id_user,user_rcv=current_user.id_user)
         if solicitud is not None:
@@ -46,8 +64,8 @@ def add_friend():
             solicitud.rejected()
             return jsonify(msg_ok=solicitud.check_status()),201
     else:
-        return jsonify(error=f'solicitud ingresada:{tipo_solicitud}, solo se admite "envio" o ""acepta"'), 401
-    return jsonify(request_error="Nada que retornar"),401
+        return jsonify(f'Tipo de solicitud ingresada invalida:{tipo_solicitud}'), 400
+    return jsonify("Nada que retornar"),400
 
 
 @user_bp.route("/addGroup", methods=["POST"])

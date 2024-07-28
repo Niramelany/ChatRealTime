@@ -69,7 +69,22 @@ class Solicitud(db.Model):
         return Solicitud.query.filter_by(
             id_user_snd=user_snd, id_user_rcv=user_rcv
         ).first()
-
+        
+    @staticmethod
+    def get_by_username(user_id):
+        return Solicitud.query.filter_by(
+            id_user_rcv=user_id
+        ).join(Solicitud.user_rcv).all()
+    
     @staticmethod
     def get_by_id(id_solicitud):
         return Solicitud.query.get(id_solicitud)
+    
+    def to_json(self):
+        return{
+            "id_solicitud":self.id_solicitud,
+            "nombre":self.user_snd.nombre,
+            "username":self.user_snd.username,
+            "estado":self.status
+        }
+    
