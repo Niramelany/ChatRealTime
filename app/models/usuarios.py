@@ -52,7 +52,6 @@ class Solicitud(db.Model):
     
     def accepted(self):
         if self.id_solicitud:
-            print(self.id_solicitud)
             self.status="aceptada"
         db.session.commit()
     

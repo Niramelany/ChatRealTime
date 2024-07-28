@@ -29,12 +29,11 @@ def get_solicitud():
     list_solicitud=[]
     for solicitud in query:
         list_solicitud.append(solicitud.to_json())
-    return jsonify(list_solicitud=list_solicitud)
+    return jsonify(list_solicitud=list_solicitud),200
 
 @user_bp.route("/solicitud", methods=["POST"])
 @jwt_required()
 def add_friend():
-    print(request.json)
     tipo_solicitud = request.json.get("tipo_solicitud", None)
     user_service = request.json.get("username", None)
     if tipo_solicitud is None and user_service is None:
@@ -43,9 +42,17 @@ def add_friend():
     if user_aux is None:
         return jsonify("El usuario ingresado no existe"), 400
     if user_aux.id_user==current_user.id_user:
-        return jsonify("¿¿Intentas enviarte solicitud a ti mismo??"), 400
+        return jsonify("¿¿Intentas enviarte solicitud a ti mismo??"), 400  
     ##comprobamos la solicitud
     if tipo_solicitud =='envio':
+        solicitud=Solicitud.check_solicitud(user_snd=user_aux.id_user,user_rcv=current_user.id_user)
+        if solicitud is not None:
+            if solicitud.status=='pendiente':
+                return jsonify("Tienes una solicitud pendiente de el usuario"),400
+            elif solicitud.status=='aceptada':
+                return jsonify("Ya son amigos"),400
+            elif solicitud.status=='rechazada':
+                return jsonify("Solicitud rechazada"),400
         #id_user_snd el que envia, id_user_rcv el que recibe
         solicitud=Solicitud.check_solicitud(user_snd=current_user.id_user,user_rcv=user_aux.id_user)
         if solicitud is None:
@@ -57,17 +64,21 @@ def add_friend():
     elif tipo_solicitud=='acepta':
         solicitud=Solicitud.check_solicitud(user_snd=user_aux.id_user,user_rcv=current_user.id_user)
         if solicitud is not None:
+            solicitud_status=solicitud.check_status()
+            if (solicitud_status!='pendiente'):
+                print("solicitud ya aceptada")
+                return jsonify(f'Solicitud {solicitud_status}'),400
             solicitud.accepted()
             if(solicitud.check_status()=='aceptada'):
-                chat=Chats(chat_name=f'{user_aux}_to_{current_user.username}')
-                chat.save()
-                user_snd=ChatMiembros(id_chat=chat.id_chat,id_user=current_user.id_user)
-                user_rcv=ChatMiembros(id_chat=chat.id_chat,id_user=user_aux.id_user)
-                user_snd.save()
-                user_rcv.save()
+                chat=Chats(chat_name=f'{user_aux.username}_to_{current_user.username}',is_group=False)
+                chat=chat.save()
+                aux_user_snd=ChatMiembros(id_chat=chat.id_chat,id_user=current_user.id_user)
+                aux_user_rcv=ChatMiembros(id_chat=chat.id_chat,id_user=user_aux.id_user)
+                aux_user_snd.save()
+                aux_user_rcv.save()
                 return jsonify(msg_ok=solicitud.check_status()),201
             else:
-                return jsonify(msg_ok=solicitud.check_status()),400
+                return jsonify(solicitud.check_status()),400
     elif tipo_solicitud=='rechaza':
         solicitud=Solicitud.check_solicitud(user_snd=user_aux.id_user,user_rcv=current_user.id_user)
         if solicitud is not None:
