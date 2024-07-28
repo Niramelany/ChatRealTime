@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, current_user
 from app.models.usuarios import Usuario,Solicitud
 from app.extensions import jwt
+from app.models.chats import Chats,ChatMiembros
 
 user_bp = Blueprint("user", __name__)
 
@@ -57,7 +58,16 @@ def add_friend():
         solicitud=Solicitud.check_solicitud(user_snd=user_aux.id_user,user_rcv=current_user.id_user)
         if solicitud is not None:
             solicitud.accepted()
-            return jsonify(msg_ok=solicitud.check_status()),201
+            if(solicitud.check_status()=='aceptada'):
+                chat=Chats(chat_name=f'{user_aux}_to_{current_user.username}')
+                chat.save()
+                user_snd=ChatMiembros(id_chat=chat.id_chat,id_user=current_user.id_user)
+                user_rcv=ChatMiembros(id_chat=chat.id_chat,id_user=user_aux.id_user)
+                user_snd.save()
+                user_rcv.save()
+                return jsonify(msg_ok=solicitud.check_status()),201
+            else:
+                return jsonify(msg_ok=solicitud.check_status()),400
     elif tipo_solicitud=='rechaza':
         solicitud=Solicitud.check_solicitud(user_snd=user_aux.id_user,user_rcv=current_user.id_user)
         if solicitud is not None:

@@ -4,7 +4,7 @@ from app.extensions import db
 
 class Usuario(db.Model):
     __tablename__ = "USERS"
-    id_user = db.Column(db.Integer, primary_key=True)
+    id_user = db.Column(db.Integer, primary_key=True, autoincrement=True)
     nombre = db.Column(db.String(50), nullable=False)
     username = db.Column(db.String(50), unique=True, nullable=False)
     passwd = db.Column(db.String(128), nullable=False)
@@ -73,7 +73,7 @@ class Solicitud(db.Model):
     @staticmethod
     def get_by_username(user_id):
         return Solicitud.query.filter_by(
-            id_user_rcv=user_id
+            id_user_rcv=user_id,status='pendiente'
         ).join(Solicitud.user_rcv).all()
     
     @staticmethod
