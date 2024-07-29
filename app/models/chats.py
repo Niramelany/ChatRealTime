@@ -79,6 +79,7 @@ class ChatMiembros(db.Model):
                 "from_name":self._id_user.nombre,
                 "to_username":user_send.username,
                 "to_name":user_send.nombre,
+                "room":self._id_chat.chat_name
             }
     
 #----

@@ -1,10 +1,11 @@
 from flask import Blueprint, request,jsonify
 from jwt import ExpiredSignatureError, InvalidSignatureError
-from app.extensions import socketio,jwt
-from flask_socketio import send,emit
-from flask_jwt_extended import JWTManager, verify_jwt_in_request,current_user,get_jwt_identity
+from app.extensions import socketio
+from flask_socketio import send,emit,join_room
+from flask_jwt_extended import verify_jwt_in_request,get_jwt_identity
 from flask_jwt_extended import exceptions,get_jwt
 from flask import request
+from app.models.usuarios import Usuario
 import functools
 
 socket_bp = Blueprint('socket', __name__)
@@ -55,29 +56,52 @@ def jwt_required_socket(f):
 @jwt_required_socket
 def handle_connect():
     print(f"Nuevo cliente conectado:")
-    emit('message', f'Mensaje recibido! {current_user.username}', broadcast=True)
+
+@socketio.on('join')
+@jwt_required_socket
+def on_join(data):
+    username = get_jwt_identity()  # Obtén el nombre de usuario del JWT
+    room = data['room']
+    join_room(room)
+    #emit('message', {'text': f'{username} has entered the room.', 'room': room}, to=room)
+    
+@socketio.on('leave')
+@jwt_required_socket
+def on_join(data):
+    username = get_jwt_identity()  # Obtén el nombre de usuario del JWT
+    room = data['room']
+    print("SE SALIO DEL CHAT")
+    #send('message', {'text': f'{username} has entered the room.', 'room': room}, to=room)
+    
+@socketio.on('send_message')
+@jwt_required_socket
+def handle_message(data):
+    username = get_jwt_identity()  # Obtén el nombre de usuario del JWT
+    room = data['room']
+    message = data['message']
+    aux_user=Usuario.get_by_id(username)
+    print({'text':message, 'room': room,'user_send':aux_user.username})
+    emit('message', {'text':message, 'room': room,'user_send':aux_user.username}, to=room)
 
 @socketio.on('user_connect')
 @jwt_required_socket
 def user_connect(user):
-    pass
-    #user = get_jwt_identity()
-    #print(f"Nuevo cliente conectado{user.id_user}")
-    #print(f"Nuevo cliente conectado: {request.sid}")
+    user = get_jwt_identity()
+    print(f"Nuevo cliente conectado{user.username}")
     """ listUsers[request.sid]=user
     listu=[v for k, v in listUsers.items()]
     emit('user_connect_list',{'user':listu},json=True,broadcast=True)
     emit('user_connected',{'user':listUsers.get(request.sid)},json=True,broadcast=True,include_self=False) """
 
 
-@socketio.on('message')
+""" @socketio.on('message')
 @jwt_required_socket
 def handleMessage(msg):
     print('header',request.headers)
     print(f'Message de {request.sid}: {msg}')
     emit('mensaje', { 'contenido': 'Mensaje recibido!' })
     emit('message-sent',{"user":listUsers.get(request.sid),'msg':msg}, room=request.sid,json=True)
-    emit('message-received',{"user":listUsers.get(request.sid),'msg':msg}, broadcast= True,json=True,include_self=False)
+    emit('message-received',{"user":listUsers.get(request.sid),'msg':msg}, broadcast= True,json=True,include_self=False) """
     
 
 @socketio.on('disconnect')
